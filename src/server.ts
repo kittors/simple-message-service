@@ -7,6 +7,7 @@ import cors from 'cors';
 import { Request } from 'express';
 
 // 根据 NODE_ENV 加载对应的 .env 文件
+// path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'dev'}`)
 const envPath = path.resolve(__dirname, `../.env.${process.env.NODE_ENV || 'dev'}`);
 dotenv.config({ path: envPath });
 
@@ -65,7 +66,10 @@ app.use(cors({
 }));
 
 // 托管 public 目录下的静态文件
-app.use(express.static(path.join(__dirname, '../public')));
+// 修复：在开发模式下使用 ts-node，__dirname 指向 src 目录。
+// 我们需要回退一级目录以找到 public 文件夹。
+// 在生产模式下，运行的是 dist/server.js，__dirname 指向 dist 目录，同样需要回退一级。
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 /**
  * POST /api/push 接口

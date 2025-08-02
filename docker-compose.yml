@@ -12,15 +12,13 @@ services:
     # 端口映射: 宿主机端口:容器端口
     ports:
       - "3000:3000"
-    # 卷挂载
-    # 将本地的 dist 和 public 目录以及 .env.dev 文件挂载到容器内
-    # 这样，可以在不重建镜像的情况下，通过重新编译和重启容器来更新代码
-    volumes:
-      - ./dist:/app/dist
-      - ./public:/app/public
-      - ./package.json:/app/package.json
-      - ./package-lock.json:/app/package-lock.json
-      - ./.env.dev:/app/.env.dev
-    # 指定运行环境为 development，PM2 将根据此变量加载 .env.dev 文件
+    # 移除卷挂载，因为所有的代码和依赖都已在镜像中
+    # volumes:
+    #   - ./dist:/app
+    #   - ./.env.dev:/app/.env.dev
+    # 使用 env_file 来加载环境变量，而不是挂载文件
+    env_file:
+      - ./.env.dev
+    # 指定运行环境为 development
     environment:
       - NODE_ENV=development
