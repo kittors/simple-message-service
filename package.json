@@ -1,0 +1,33 @@
+{
+  "name": "simple-message-service",
+  "version": "1.0.0",
+  "description": "一个简单的消息推送和展示服务。",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "ts-node src/server.ts",
+    "build:dev": "cross-env NODE_ENV=development tsc",
+    "build:prod": "cross-env NODE_ENV=production tsc",
+    "start:dev": "cross-env NODE_ENV=development node dist/server.js",
+    "start:prod": "cross-env NODE_ENV=production node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-rsa": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.9",
+    "@types/node-rsa": "^1.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  }
+}

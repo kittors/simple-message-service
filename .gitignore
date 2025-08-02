@@ -1,0 +1,10 @@
+# 忽略 Node.js 模块
+node_modules/
+
+# 忽略构建产物
+dist/
+
+# 忽略环境变量文件
+.env.dev
+.env.prod
+

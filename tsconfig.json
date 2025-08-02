@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es2016",                                  /* 指定ECMAScript目标版本 */
+    "module": "commonjs",                               /* 指定模块系统为CommonJS */
+    "rootDir": "./src",                                 /* 指定源代码根目录 */
+    "outDir": "./dist",                                 /* 指定输出目录 */
+    "esModuleInterop": true,                            /* 启用CommonJS与ES模块的互操作性 */
+    "forceConsistentCasingInFileNames": true,           /* 强制文件名大小写一致 */
+    "strict": true,                                     /* 启用所有严格类型检查选项 */
+    "skipLibCheck": true                                /* 跳过库文件的类型检查 */
+  }
+}
