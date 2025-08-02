@@ -88,7 +88,7 @@ simple-message-service
 1. **克隆仓库:**
     
     ```
-    git clone <your-repo-url>
+    git clone https://github.com/kittors/simple-message-service.git
     cd simple-message-service
     ```
     
