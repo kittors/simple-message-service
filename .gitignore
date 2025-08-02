@@ -1,8 +1,15 @@
-# 忽略 Node.js 模块
 node_modules/
 
-# 忽略构建产物
 dist/
+.DS_Store
 
+# 忽略环境变量文件，这些文件通常包含敏感信息或特定于环境的配置。
+#
+# 原则：将敏感数据和环境配置与代码分离，通过模板文件（如 .env.example）管理。
+# .env.dev
+# .env.prod
 
-
+npm-debug.log*
+.vscode/
+.idea/
+pnpm-lock.yaml
