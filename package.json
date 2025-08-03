@@ -10,8 +10,13 @@
     "dev": "turbo run dev --parallel",
     "build:backend": "pnpm --filter simple-message-service-backend build",
     "build:frontend": "pnpm --filter simple-message-service-frontend build",
-    "build": "turbo run build",
-    "start": "pnpm --filter simple-message-service-backend start"
+    "clean": "rm -rf dist",
+    "build": "pnpm clean && pnpm build:frontend && pnpm build:backend && pnpm post-build-setup",
+    "post-build-setup": "pnpm copy:env && pnpm copy:deploy && node scripts/generate-prod-pkg.js && pnpm install:dist-backend",
+    "copy:env": "cp .env.prod dist/",
+    "copy:deploy": "cp deploy/Dockerfile dist/ && cp deploy/docker-compose.yml dist/",
+    "install:dist-backend": "cd dist/backend && npm install --omit=dev",
+    "start": "node dist/backend/server.js"
   },
   "keywords": [],
   "author": "",

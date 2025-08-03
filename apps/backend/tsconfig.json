@@ -1,13 +1,9 @@
 {
   "extends": "typescript-config/node.json",
-  "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist"
+ "compilerOptions": {
+    "outDir": "../../dist/backend"
   },
   "include": [
     "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

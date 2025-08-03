@@ -1,13 +1,14 @@
 // src/server.ts
 
+// 核心原则：原子性 - 环境变量加载和路径解析是应用的最小单元，应该集中处理并放置在最前面。
+// 在 CommonJS 环境中，__dirname 变量是全局可用的，无需手动创建。
 import express, { Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { Request } from 'express';
 import path from 'path';
 
-// 核心原则：原子性 - 环境变量加载是应用的最小单元之一，应该集中处理
-// 显式指定根目录下的 .env 文件路径，确保在任何工作目录启动都能正确加载
+// 加载环境变量文件，使用修正后的 __dirname 确保路径正确
 const envPath = path.resolve(__dirname, `../../../.env.${process.env.NODE_ENV || 'dev'}`);
 dotenv.config({ path: envPath });
 
@@ -62,17 +63,27 @@ app.use(express.json());
 
 // 允许跨域请求，这里仅用于开发环境
 app.use(cors({
-    origin: '*', // 在生产环境中应限制为前端域名
+    origin: '*',
     methods: ['GET', 'POST']
 }));
+
+// --- 提供前端静态文件 ---
+// 定义静态文件根目录。在部署环境中，server.js 位于 dist/backend，
+// 前端静态文件在 dist/frontend。
+// 关键修正：将路径指向 dist 目录
+const frontendPath = path.join(__dirname, '..', '..', 'dist', 'frontend');
+app.use(express.static(frontendPath));
+console.log(`[Static] 正在服务静态文件目录：${frontendPath}`);
+// --- 新增内容结束 ---
 
 /**
  * GET / 接口
  * 职责: 为根路径提供一个简单的欢迎信息。
- * 这是一个为了解决404错误的临时路由，方便开发者确认服务是否正常运行。
  */
 app.get('/', (req, res) => {
-  res.status(200).send('Simple Message Service Backend is running.');
+  // --- 修正内容：将根路径请求发送到前端的 index.html ---
+  res.sendFile(path.join(frontendPath, 'index.html'));
+  // --- 修正内容结束 ---
 });
 
 /**
@@ -131,7 +142,5 @@ app.get('/api/sse/:key', (req: Request, res: Response) => {
 
 // 启动服务器
 app.listen(PORT, () => {
-  // 核心原则：原子性 - console.log 是一个简单的、独立的单元
-  // \x1b[32m 表示绿色，\x1b[0m 表示重置颜色
   console.log(`服务器已在 \x1b[32mhttp://localhost:${PORT}\x1b[0m 端口启动`);
 });

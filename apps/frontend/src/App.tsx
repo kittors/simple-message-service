@@ -98,7 +98,14 @@ const App = () => {
     }
 
     try {
-      const sse = new EventSource(`http://localhost:${backendPort}/api/sse/${key}`);
+      // 修正：在生产环境中，前端和后端服务由同一个服务器提供，
+      // 因此 EventSource 连接可以指向相对路径 /api/sse/:key
+      // 在开发环境中，则需要使用完整的地址
+      const sseUrl = import.meta.env.DEV
+        ? `http://localhost:${backendPort}/api/sse/${key}`
+        : `/api/sse/${key}`;
+
+      const sse = new EventSource(sseUrl);
       sseRef.current = sse;
 
       sse.onmessage = (event) => {
@@ -114,8 +121,8 @@ const App = () => {
 
       sse.onerror = (error) => {
         console.error('SSE 连接发生错误:', error);
-        // 如果连接断开，尝试重连或显示错误消息
         setMessage('与服务器的连接已断开，正在尝试重连...');
+        // 自动重连逻辑可以在这里添加
       };
     } catch (e) {
       console.error('EventSource 实例创建失败:', e);
@@ -170,4 +177,3 @@ const App = () => {
 };
 
 export default App;
-
