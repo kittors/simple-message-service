@@ -1,0 +1,14 @@
+{
+  "name": "typescript-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "为 monorepo 中的所有项目提供可重用的 TypeScript 配置。",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "files": [
+    "base.json",
+    "node.json"
+  ]
+}

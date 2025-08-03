@@ -13,3 +13,55 @@ npm-debug.log*
 .vscode/
 .idea/
 pnpm-lock.yaml
+# ----------------------------------------------------
+# 这是一个为pnpm monorepo项目设计的.gitignore文件。
+# 它旨在忽略所有生成的构建产物、依赖项和敏感文件，
+# 同时保持工作区（monorepo）的整洁和可移植性。
+#
+# 核心原则：
+# 1. 忽略所有包的 node_modules 目录。
+# 2. 忽略每个应用的 dist/ 或构建输出目录。
+# 3. 忽略根目录的 node_modules 目录。
+# 4. 忽略所有 .env 文件，因为它们包含敏感信息。
+# ----------------------------------------------------
+
+# ----------------- 依赖和构建产物 -------------------
+# 忽略所有 node_modules 目录，无论它在哪里。
+node_modules
+
+# 忽略 pnpm-lock.yaml，pnpm 会自动生成
+# pnpm-lock.yaml
+
+# 忽略每个应用的构建输出目录
+apps/*/dist
+apps/*/build
+
+# ----------------- 环境文件 -------------------
+# 忽略所有 .env 文件，防止敏感信息被提交
+.env
+.env.*
+.env.local
+!/.env.example
+
+# ----------------- 工具和编辑器配置 -------------------
+# 忽略 VS Code 配置
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+.vscode/*.code-workspace
+
+# 忽略 IDE 和编辑器生成的临时文件
+.idea
+*.log
+*.DS_Store
+Thumbs.db
+
+# ----------------- Docker -------------------
+# Dockerfile 中使用的构建上下文
+dist
+
+# ----------------- Turborepo -------------------
+# 忽略 Turborepo 缓存目录
+.turbo
+
