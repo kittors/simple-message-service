@@ -8,9 +8,14 @@ import cors from 'cors';
 import { Request } from 'express';
 import path from 'path';
 
-// 加载环境变量文件，使用修正后的 __dirname 确保路径正确
-const envPath = path.resolve(__dirname, `../../../.env.${process.env.NODE_ENV || 'dev'}`);
+// 关键修正：调整路径解析逻辑，使其同时兼容本地环境和 Docker 环境。
+// 构建后，server.js 位于 dist/backend/ 或 /app/backend/。
+// 从这个位置上溯一层即可找到位于 dist/ 或 /app/ 的 .env 文件。
+const envFile = `.env.${process.env.NODE_ENV || 'dev'}`;
+const envPath = path.resolve(__dirname, '..', envFile);
 dotenv.config({ path: envPath });
+console.log(`[ENV] Loading environment variables from: ${envPath}`);
+
 
 // 定义端口和项目前缀
 const PORT = process.env.VITE_BACKEND_PORT || 3001;
@@ -68,22 +73,18 @@ app.use(cors({
 }));
 
 // --- 提供前端静态文件 ---
-// 定义静态文件根目录。在部署环境中，server.js 位于 dist/backend，
-// 前端静态文件在 dist/frontend。
-// 关键修正：将路径指向 dist 目录
-const frontendPath = path.join(__dirname, '..', '..', 'dist', 'frontend');
+// 关键修正：路径解析同样需要兼容本地和 Docker 环境。
+// server.js 位于 /app/backend，前端文件位于 /app/frontend。
+const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 console.log(`[Static] 正在服务静态文件目录：${frontendPath}`);
-// --- 新增内容结束 ---
 
 /**
  * GET / 接口
  * 职责: 为根路径提供一个简单的欢迎信息。
  */
 app.get('/', (req, res) => {
-  // --- 修正内容：将根路径请求发送到前端的 index.html ---
   res.sendFile(path.join(frontendPath, 'index.html'));
-  // --- 修正内容结束 ---
 });
 
 /**
