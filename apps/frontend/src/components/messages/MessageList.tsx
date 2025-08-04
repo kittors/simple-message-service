@@ -81,7 +81,7 @@ export function MessageList({
           </div>
         )}
         
-        <div ref={loaderRef} className="text-center p-4 text-gray-500 h-10">
+        <div ref={loaderRef} className="text-center p-4 text-gray-500">
           {isLoading && '加载中...'}
           {!isLoading && !hasMore && messages.length > 0 && '没有更多消息了'}
         </div>
