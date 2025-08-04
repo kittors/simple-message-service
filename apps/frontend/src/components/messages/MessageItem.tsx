@@ -1,8 +1,9 @@
 // apps/frontend/src/components/messages/MessageItem.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Message } from '../../types';
-import { Trash2, Sparkles } from 'lucide-react'; // 引入新图标
+// 核心更新：引入 Copy 和 Check 图标
+import { Trash2, Sparkles, Copy, Check } from 'lucide-react';
 
 /**
  * 核心原则：消息项原子。
@@ -10,6 +11,7 @@ import { Trash2, Sparkles } from 'lucide-react'; // 引入新图标
  * 新增功能：
  * 1. 语法高亮：通过一个内部辅助函数，为数字和字母应用不同的颜色。
  * 2. “新消息”提示：根据传入的 `isLatest` 属性，显示一个特殊的图标。
+ * 3. 复制功能：允许用户一键复制消息内容，并提供即时反馈。
  */
 
 interface MessageItemProps {
@@ -40,9 +42,26 @@ const renderHighlightedContent = (content: string) => {
 };
 
 export function MessageItem({ message, isSelected, isLatest, onToggleSelection, onDelete }: MessageItemProps) {
+  // 新增：用于管理“已复制”状态的 state
+  const [isCopied, setIsCopied] = useState(false);
+
+  // 核心更新：处理复制操作的函数
+  const handleCopy = () => {
+    // 使用 clipboard API 复制消息内容
+    navigator.clipboard.writeText(message.content).then(() => {
+      setIsCopied(true);
+      // 2秒后自动重置“已复制”状态
+      setTimeout(() => setIsCopied(false), 2000);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      // 在这里可以添加一个错误提示，例如使用 toast
+    });
+  };
+
   return (
+    // 新增 `group` class，以便在悬停时显示操作按钮
     <div 
-      className={`flex items-start gap-4 p-4 mb-3 rounded-lg shadow-sm transition-colors duration-200 animate-fade-in ${
+      className={`group flex items-start gap-4 p-4 mb-3 rounded-lg shadow-sm transition-colors duration-200 animate-fade-in ${
         isSelected ? 'bg-indigo-50 dark:bg-indigo-900/50' : 'bg-gray-50 dark:bg-gray-700'
       }`}
     >
@@ -53,11 +72,9 @@ export function MessageItem({ message, isSelected, isLatest, onToggleSelection, 
         className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
       />
       <div className="flex-1">
-        {/* 使用高亮函数渲染消息内容 */}
         <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
           {renderHighlightedContent(message.content)}
         </div>
-        {/* 底部信息区域，包含“新消息”提示和时间戳 */}
         <div className="flex justify-end items-center gap-3 mt-2">
           {isLatest && (
             <span className="flex items-center gap-1.5 text-xs text-amber-500 dark:text-amber-400 animate-pulse" title="最新消息">
@@ -70,14 +87,26 @@ export function MessageItem({ message, isSelected, isLatest, onToggleSelection, 
           </p>
         </div>
       </div>
-      <button
-        onClick={() => onDelete(message.id)}
-        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full transition-colors duration-200"
-        aria-label="删除消息"
-        title="删除消息"
-      >
-        <Trash2 size={16} />
-      </button>
+      {/* 核心更新：操作按钮容器，默认透明，悬停时显示 */}
+      <div className="flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <button
+          onClick={handleCopy}
+          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full transition-colors duration-200"
+          aria-label="复制消息"
+          title="复制消息"
+        >
+          {/* 根据 isCopied 状态显示不同的图标 */}
+          {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+        </button>
+        <button
+          onClick={() => onDelete(message.id)}
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full transition-colors duration-200"
+          aria-label="删除消息"
+          title="删除消息"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
     </div>
   );
 }
