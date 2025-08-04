@@ -21,4 +21,9 @@ router.get('/history/:key', MessageController.handleGetHistory);
 // 客户端建立 SSE 连接的端点
 router.get('/sse/:key', MessageController.handleSseConnection);
 
+// 新增：客户端删除消息的端点
+// 使用 DELETE 方法，符合 RESTful 规范
+// 将 key 作为 URL 参数，ids 放在请求体中，以支持批量操作
+router.delete('/messages/:key', MessageController.handleDeleteMessages);
+
 export default router;

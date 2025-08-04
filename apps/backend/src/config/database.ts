@@ -34,17 +34,44 @@ pool.on('error', (err) => {
 export async function initializeDatabase() {
   const client = await pool.connect();
   try {
+    // 核心更新：增加 updated_at 字段，用于追踪记录的最后更新时间。
     await client.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id SERIAL PRIMARY KEY,
         client_key VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
       );
     `);
-    console.log('[DB] "messages" table initialized successfully.');
+    
+    // 创建一个触发器函数，在每次更新行时自动更新 updated_at 字段
+    await client.query(`
+      CREATE OR REPLACE FUNCTION update_updated_at_column()
+      RETURNS TRIGGER AS $$
+      BEGIN
+         NEW.updated_at = NOW(); 
+         RETURN NEW;
+      END;
+      $$ language 'plpgsql';
+    `);
+
+    // 将触发器绑定到 messages 表
+    // 首先移除旧的触发器（如果存在），以保证幂等性
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_messages_updated_at ON messages;
+    `);
+    await client.query(`
+      CREATE TRIGGER update_messages_updated_at
+      BEFORE UPDATE ON messages
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+    `);
+
+    console.log('[DB] "messages" table and "updated_at" trigger initialized successfully.');
   } catch (err) {
-    console.error('[DB] Error initializing database table:', err);
+    console.error('[DB] Error initializing database table or trigger:', err);
     throw err;
   } finally {
     client.release();

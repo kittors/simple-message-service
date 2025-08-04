@@ -34,7 +34,6 @@ export async function handlePushMessage(req: Request, res: Response) {
 
 export async function handleGetHistory(req: Request, res: Response) {
   const { key } = req.params;
-  // 从查询参数获取分页信息，并提供默认值
   const page = parseInt(req.query.page as string, 10) || 1;
   const limit = parseInt(req.query.limit as string, 10) || 10;
 
@@ -54,18 +53,44 @@ export async function handleGetHistory(req: Request, res: Response) {
 export function handleSseConnection(req: Request, res: Response) {
   const { key } = req.params;
   if (!key) {
-    // 对于SSE连接，我们不能发送JSON错误，只能直接关闭
     return res.end();
   }
 
-  // 设置 SSE 头部
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', '*'); // 允许跨域
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
-  // 立即发送一个心跳或欢迎消息，确认连接成功
   res.write(`data: ${JSON.stringify({ type: 'system', content: 'Connection established' })}\n\n`);
 
   SseService.addClient(key, res);
+}
+
+/**
+ * 新增：处理删除消息的请求。
+ */
+export async function handleDeleteMessages(req: Request, res: Response) {
+  const { key } = req.params;
+  // 从请求体中获取要删除的消息ID数组
+  const { ids } = req.body;
+
+  if (!key) {
+    return sendError(res, 'Key is required in URL path.', 400);
+  }
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return sendError(res, 'Message IDs must be a non-empty array.', 400);
+  }
+
+  try {
+    const deletedCount = await MessageService.deleteMessages(key, ids);
+    if (deletedCount > 0) {
+      sendSuccess(res, { deletedCount }, `${deletedCount} message(s) deleted successfully.`);
+    } else {
+      // 虽然操作成功，但没有消息被删除（可能ID不存在或不属于该用户）
+      sendError(res, 'No messages were deleted. They may not exist or you may not have permission.', 404);
+    }
+  } catch (error) {
+    console.error('Error deleting messages:', error);
+    sendError(res, 'Failed to delete messages.');
+  }
 }

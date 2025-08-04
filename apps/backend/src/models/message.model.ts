@@ -11,4 +11,7 @@ export interface Message {
   client_key: string;
   content: string;
   created_at: Date;
+  // 核心更新：增加 updated_at 字段。
+  updated_at: Date;
+  deleted_at: Date | null;
 }

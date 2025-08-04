@@ -29,7 +29,8 @@ async function startServer() {
   const app = express();
 
   // 2. 设置中间件
-  app.use(cors({ origin: '*', methods: ['GET', 'POST'] }));
+  // 核心修正：在允许的 HTTP 方法列表中添加 'DELETE'，以解决CORS预检请求失败的问题。
+  app.use(cors({ origin: '*', methods: ['GET', 'POST', 'DELETE'] }));
   app.use(express.json());
 
   // 3. 挂载API路由
