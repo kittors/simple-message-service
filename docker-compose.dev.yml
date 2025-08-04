@@ -1,0 +1,31 @@
+# docker-compose.dev.yml
+
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库服务
+  postgres:
+    image: postgres:14-alpine
+    container_name: dev-postgres
+    # 核心修正：使用 env_file 指令直接加载 .env.dev 文件。
+    # 这会把 .env.dev 文件中定义的所有变量都作为环境变量注入到 postgres 容器内部。
+    # 这是比依赖命令行参数更稳健的做法。
+    env_file:
+      - ./.env.dev
+    ports:
+      # 我们在 .env.dev 中定义了 POSTGRES_PORT，这里可以直接使用。
+      # 注意：为了让这里的变量替换生效，运行 docker compose 命令的 shell 环境中需要有 POSTGRES_PORT 这个变量。
+      # 一个简单的做法是，在运行前先执行 `export $(grep -v '^#' .env.dev | xargs)`
+      # 或者，为了简单起见，在开发环境中硬编码端口也是完全可以接受的。
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # 健康检查现在可以直接使用容器内的环境变量
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

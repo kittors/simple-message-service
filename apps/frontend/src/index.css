@@ -1,1 +1,51 @@
 @import "tailwindcss";
+
+/* 核心新增：为 Toast 和其他组件添加入场动画 */
+@layer utilities {
+  /* Toast 动画: 从右侧滑入，然后向右侧滑出 */
+  @keyframes toast-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes toast-out-right {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-toast-in {
+    /* 使用三次方贝塞尔曲线函数，使动画更具动感和自然感 */
+    animation: toast-in-right 0.5s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+  }
+
+  .animate-toast-out {
+    animation: toast-out-right 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  /* 通用的淡入动画，增加轻微的向上移动效果 */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-in-out forwards;
+  }
+}
