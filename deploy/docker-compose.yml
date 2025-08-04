@@ -1,24 +1,49 @@
 # deploy/docker-compose.yml
+# 核心原则：此文件为部署模板。
+# 它将被复制到 dist/ 目录，并从那里执行。
 
-version: '3.8'
+networks:
+  message_service_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
 
 services:
   web:
-    # 使用新的 Dockerfile 构建镜像
     build:
-      # context 必须指向 Dockerfile 所在的目录，即 dist/
+      # context: `.` 指向当前目录，即 dist/。
       context: .
-      # 指定 Dockerfile 的位置
+      # dockerfile: Dockerfile 位于 context 的根目录。
       dockerfile: Dockerfile
-    # 容器名称
-    container_name: simple-message-service
-    # 端口映射: 宿主机端口:容器端口
+    container_name: simple-message-service-web
+    networks:
+      - message_service_net
     ports:
-      - "8081:8081"
-    # 使用 env_file 来加载环境变量
-    # 由于 .env.prod 文件现在在与 docker-compose.yml 相同的目录，路径也相应简化
+      # 变量将由 docker-compose 自动从同级目录的 .env 文件中读取和替换。
+      - "${VITE_BACKEND_PORT}:${VITE_BACKEND_PORT}"
+    # env_file: 将 .env 文件中的所有变量作为环境变量注入到容器内部。
     env_file:
-      - ./.env.prod
-    # 指定运行环境为 production
-    environment:
-      - NODE_ENV=production
+      - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  postgres:
+    image: postgres:14-alpine
+    container_name: simple-message-service-db
+    networks:
+      - message_service_net
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # 变量同样由 .env 文件提供给 docker-compose 进行替换。
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
