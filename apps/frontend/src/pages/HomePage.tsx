@@ -9,13 +9,13 @@ import { BellRing, LogOut, Link, Unlink } from 'lucide-react';
 
 export function HomePage() {
   const { userKey, isLoggedIn, isInitialized, login, logout } = useAuth();
-  // 从 useMessages Hook 中获取所有需要的状态和函数
   const { 
     messages, 
     isLoading, 
     hasMore, 
     isConnected, 
     selectedIds,
+    latestSseMessageId, // 获取最新消息ID
     loadMoreMessages, 
     deleteMessages,
     toggleSelection
@@ -51,19 +51,19 @@ export function HomePage() {
               </div>
             </div>
             <button
-              onClick={logout} // 退出时，useMessages 的 useEffect 会自动处理清理逻辑
+              onClick={logout}
               className="flex items-center px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               <LogOut className="w-4 h-4 mr-2" />
               退出
             </button>
           </div>
-          {/* 将所有需要的 props 传递给 MessageList */}
           <MessageList
             messages={messages}
             isLoading={isLoading}
             hasMore={hasMore}
             selectedIds={selectedIds}
+            latestSseMessageId={latestSseMessageId} // 将ID传递给列表组件
             onLoadMore={loadMoreMessages}
             onDelete={deleteMessages}
             onToggleSelection={toggleSelection}

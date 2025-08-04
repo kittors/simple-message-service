@@ -12,8 +12,9 @@ export function useMessages(userKey: string | null) {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  // 新增：管理选中的消息ID
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  // 新增：用于追踪最新实时消息的ID，以实现“新消息”提示。
+  const [latestSseMessageId, setLatestSseMessageId] = useState<number | null>(null);
   const sseConnection = useRef<{ close: () => void } | null>(null);
   const { showToast } = useToast();
 
@@ -38,19 +39,17 @@ export function useMessages(userKey: string | null) {
     setPage(1);
     setHasMore(true);
     setIsConnected(false);
-    setSelectedIds(new Set()); // 重置时清空选中项
+    setSelectedIds(new Set());
+    setLatestSseMessageId(null); // 重置时清空最新消息ID
     if (sseConnection.current) sseConnection.current.close();
   }, []);
 
-  // 新增：处理消息删除的逻辑
   const deleteMessages = useCallback(async (ids: number[]) => {
     if (!userKey || ids.length === 0) return;
 
     const success = await apiDeleteMessages(userKey, ids);
     if (success) {
-      // 从本地状态中过滤掉已删除的消息
       setMessages((prev) => prev.filter((msg) => !ids.includes(msg.id)));
-      // 从选中项中移除已删除的ID
       setSelectedIds((prev) => {
         const newSelected = new Set(prev);
         ids.forEach(id => newSelected.delete(id));
@@ -62,7 +61,6 @@ export function useMessages(userKey: string | null) {
     }
   }, [userKey, showToast]);
 
-  // 新增：处理单个消息的选中状态切换
   const toggleSelection = useCallback((id: number) => {
     setSelectedIds((prev) => {
       const newSelected = new Set(prev);
@@ -81,6 +79,8 @@ export function useMessages(userKey: string | null) {
       sseConnection.current = createSseConnection(userKey, {
         onMessage: (newMessage) => {
           setMessages((prev) => [newMessage, ...prev]);
+          // 核心更新：当收到新消息时，更新其ID为“最新”
+          setLatestSseMessageId(newMessage.id);
           showToast('收到一条新消息', 'success');
         },
         onError: () => {
@@ -103,9 +103,10 @@ export function useMessages(userKey: string | null) {
     isLoading,
     hasMore,
     isConnected,
-    selectedIds, // 导出选中ID
+    selectedIds,
+    latestSseMessageId, // 导出最新消息ID
     loadMoreMessages,
-    deleteMessages, // 导出删除函数
-    toggleSelection, // 导出切换选中函数
+    deleteMessages,
+    toggleSelection,
   };
 }

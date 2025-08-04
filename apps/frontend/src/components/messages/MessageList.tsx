@@ -10,6 +10,7 @@ interface MessageListProps {
   hasMore: boolean;
   isLoading: boolean;
   selectedIds: Set<number>;
+  latestSseMessageId: number | null; // 新增：接收最新消息ID
   onLoadMore: () => void;
   onDelete: (ids: number[]) => void;
   onToggleSelection: (id: number) => void;
@@ -20,6 +21,7 @@ export function MessageList({
   hasMore, 
   isLoading, 
   selectedIds,
+  latestSseMessageId, // 接收
   onLoadMore, 
   onDelete,
   onToggleSelection
@@ -47,7 +49,6 @@ export function MessageList({
   
   return (
     <div className="flex flex-col h-[32rem]">
-      {/* 批量操作工具栏 */}
       <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-600">
         <span className="text-sm text-gray-500">
           已选中 {selectedIds.size} / {messages.length} 项
@@ -62,15 +63,15 @@ export function MessageList({
         </button>
       </div>
 
-      {/* 消息列表区域 */}
       <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-800 p-2">
         {messages.map(msg => (
           <MessageItem 
             key={msg.id} 
             message={msg}
             isSelected={selectedIds.has(msg.id)}
+            isLatest={msg.id === latestSseMessageId} // 新增：判断是否为最新消息
             onToggleSelection={onToggleSelection}
-            onDelete={() => onDelete([msg.id])} // 单个删除也通过数组传递
+            onDelete={() => onDelete([msg.id])}
           />
         ))}
 
@@ -80,7 +81,7 @@ export function MessageList({
           </div>
         )}
         
-        <div ref={loaderRef} className="text-center p-4 text-gray-500">
+        <div ref={loaderRef} className="text-center p-4 text-gray-500 h-10">
           {isLoading && '加载中...'}
           {!isLoading && !hasMore && messages.length > 0 && '没有更多消息了'}
         </div>
